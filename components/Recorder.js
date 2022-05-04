@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Button, StyleSheet, Text, View, PermissionsAndroid } from 'react-native';
 import { Audio } from 'expo-av';
 import { StorageAccessFramework } from 'expo-file-system';
 import * as FileSystem from 'expo-file-system';
@@ -10,8 +10,7 @@ export default function Recorder() {
     const [recording, setRecording] = useState();
     const [recordings, setRecordings] = useState([]);
     const [message, setMessage] = useState("");
-    const [status, requestPermission] = MediaLibrary.usePermissions(); // check if used after other permission fixes
-//    const [filePermissions, setFilePermissions] = useState({ granted: false, directoryUri: "" })
+
 
     async function startRecording() {
         try {
@@ -87,15 +86,19 @@ export default function Recorder() {
                 return;
             } */
 
-            const mediaPerms = requestPermission();
-            if ((await mediaPerms).status != 'granted') return;
+            /*let mediaPerms = requestPermission(status);
+            if ((await mediaPerms).status != 'granted') return;*/
 
-            const asset = await MediaLibrary.createAssetAsync(recUri);
-            const album = await MediaLibrary.getAlbumAsync('exporecordings');
-            if (album == null) {
-                await MediaLibrary.createAlbumAsync('exporecordings', asset, false);
-            } else {
-                await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+            const mediaPerms = await MediaLibrary.requestPermissionsAsync();
+            if (mediaPerms.status === "granted") {
+                const asset = await MediaLibrary.createAssetAsync(recUri);
+                const album = await MediaLibrary.getAlbumAsync('mirecorder');
+                if (album == null) {
+                    // TODO: Delete original file? Clear the clip list once saved?
+                    await MediaLibrary.createAlbumAsync('mirecorder', asset, true);
+                } else {
+                    await MediaLibrary.addAssetsToAlbumAsync([asset], album, true);
+                }
             }
 
         } catch (err) {
