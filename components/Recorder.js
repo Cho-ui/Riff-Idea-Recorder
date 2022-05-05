@@ -1,9 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useEffect } from 'react';
-import { Button, StyleSheet, Text, View, PermissionsAndroid } from 'react-native';
+import React, { useState } from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
 import { Audio } from 'expo-av';
-import { StorageAccessFramework } from 'expo-file-system';
-import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 
 export default function Recorder() {
@@ -36,8 +34,6 @@ export default function Recorder() {
     async function stopRecording() {
         setRecording(undefined);
         await recording.stopAndUnloadAsync();
-        const uri = recording.getURI();
-        alert(uri);
 
         let updatedRecordings = [...recordings];
         const { sound, status } = await recording.createNewLoadedSoundAsync();
@@ -58,13 +54,13 @@ export default function Recorder() {
         return `${minDisplay}:${secDisplay}`;
     }
 
-    function getRecordingLines() {
-        return recordings.map((recordingLine, index) => {
+    function getRecordingTakes() {
+        return recordings.map((take, index) => {
             return (
                 <View key={index} style={styles.row}>
-                    <Text style={styles.fill}>Recording {index + 1} - {recordingLine.duration}</Text>
-                    <Button style={styles.button} onPress={() => recordingLine.sound.replayAsync()} title="Play" />
-                    <Button style={styles.button} onPress={() => saveRecording(recordingLine.file)} title="Save" />
+                    <Text style={styles.fill}>Take {index + 1} - {take.duration}</Text>
+                    <Button style={styles.button} onPress={() => take.sound.replayAsync()} title="Play" />
+                    <Button style={styles.button} onPress={() => saveRecording(take.file)} title="Save" />
                 </View>
             );
         });
@@ -72,23 +68,6 @@ export default function Recorder() {
 
     async function saveRecording(recUri) {
         try {
-            /*if (filePermissions.granted === false && filePermissions.directoryUri === "") {
-                const albumUri = StorageAccessFramework.getUriForDirectoryInRoot("exporecordings");
-                const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync(albumUri);
-                
-                if (permissions.granted && permissions.directoryUri)
-                setFilePermissions = {granted: permissions.granted, directoryUri: permissions.directoryUri};
-            }*/
-
-            /*const downloadedAudio = await FileSystem.downloadAsync(recUri, FileSystem.documentDirectory);
-            if (downloadedAudio.status != 200) {
-                alert("DL status issue")
-                return;
-            } */
-
-            /*let mediaPerms = requestPermission(status);
-            if ((await mediaPerms).status != 'granted') return;*/
-
             const mediaPerms = await MediaLibrary.requestPermissionsAsync();
             if (mediaPerms.status === "granted") {
                 const asset = await MediaLibrary.createAssetAsync(recUri);
@@ -100,7 +79,6 @@ export default function Recorder() {
                     await MediaLibrary.addAssetsToAlbumAsync([asset], album, true);
                 }
             }
-
         } catch (err) {
             console.error(err);
         }
@@ -112,7 +90,7 @@ export default function Recorder() {
             <Button
                 title={recording ? 'Stop Recording' : 'Start Recording'}
                 onPress={recording ? stopRecording : startRecording} />
-            {getRecordingLines()}
+            {getRecordingTakes()}
             <StatusBar style="auto" />
         </View>
     )
