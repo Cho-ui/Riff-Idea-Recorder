@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native'
 import { StorageAccessFramework } from 'expo-file-system';
 import * as FileSystem from 'expo-file-system';
@@ -9,6 +9,15 @@ import { Audio } from 'expo-av';
 export default function Recorder() {
     const [internalFolderUri, setInternalFolderUri] = useState("");
     const [cacheRecordings, setCacheRecordings] = useState([]);
+    const [sound, setSound] = useState();
+
+    useEffect(() => {
+        return sound
+          ? () => {
+              console.log('Unloading Sound');
+              sound.unloadAsync(); }
+          : undefined;
+      }, [sound]);
 
     async function getFiles() {
         try {
@@ -31,36 +40,24 @@ export default function Recorder() {
                     return;
                 }
 
-                // Copies files from external storage to internal cache storage
+                // delete previous cache folder along with contents so cache is up-to-date with media library assets
+                const cDir = await FileSystem.getInfoAsync(FileSystem.cacheDirectory + "mirecorder");
+                if (cDir.exists) {
+                    await FileSystem.deleteAsync(cDir.uri);
+                }
+
+                // Copies files from external storage to internal cache storage 
                 await StorageAccessFramework.copyAsync({
                     from: albumUri,
                     to: FileSystem.cacheDirectory,
-                });
+                }); 
 
                 const outputDir = FileSystem.cacheDirectory + "mirecorder";
-                setInternalFolderUri(outputDir);
+                setInternalFolderUri(outputDir); // most likely not needed, but saved for now
 
                 // filenames in the internal cache storage
                 const outputContents = await FileSystem.readDirectoryAsync(outputDir);
                 setCacheRecordings(outputContents);
-
-                // Creates assets from local files
-                /* const [newAlbumCreator, ...assets] = await Promise.all(
-                    migratedFiles.map < Promise < MediaLibrary.Asset >> (
-                        async fileName => await MediaLibrary.createAssetAsync(outputDir + '/' + fileName)
-                    )
-                );
-
-                // Album was empty
-                if (!newAlbumCreator) {
-                    return;
-                }
-
-                // Creates a new album in the scoped directory
-                const newAlbum = await MediaLibrary.createAlbumAsync("mirecorder-assets", newAlbumCreator, false);
-                if (assets.length) {
-                    await MediaLibrary.addAssetsToAlbumAsync(assets, newAlbum, false);
-                } */
             }
 
         } catch (err) {
@@ -70,24 +67,17 @@ export default function Recorder() {
 
     async function playClip(clipUri) {
         try {
-            const assetTable = await MediaLibrary.getAssetsAsync({ mediaType: "audio" });
-            const asset = assetTable.assets[0];
-            // , after: "39"
-            // const seconduri = internalFolderUri + "/" + clipUri;
+            const album = await MediaLibrary.getAlbumAsync('mirecorder');
+            const assetTable = await MediaLibrary.getAssetsAsync({ mediaType: "audio", album: album});
+            const asset = assetTable.assets[1];
 
-            // works in debug mode, otherwise not. Observe status in a state, maybe dependent on that?
-            // also, file render needs fixing
+            // works, TODO: filename utilization
 
             const { sound } = await Audio.Sound.createAsync(asset);
-
-            const status = await sound.getStatusAsync();
-            if (status.isLoaded) console.log("loaded")
+            setSound(sound);
+            console.log('Playing Sound');
             await sound.playAsync();
-            const play = await sound.getStatusAsync()
-            if (play.isPlaying) console.log("is playing")
-            await sound.unloadAsync();
-            const not = await sound.getStatusAsync();
-            if (!not.isLoaded) console.log("is not loaded")            
+
         } catch (err) {
             console.error(err);
         }
