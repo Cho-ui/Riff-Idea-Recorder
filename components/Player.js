@@ -10,14 +10,16 @@ export default function Recorder() {
     const [internalFolderUri, setInternalFolderUri] = useState("");
     const [cacheRecordings, setCacheRecordings] = useState([]);
     const [sound, setSound] = useState();
+    const [audioAssets, setAudioAssets] = useState([]);
 
     useEffect(() => {
         return sound
-          ? () => {
-              console.log('Unloading Sound');
-              sound.unloadAsync(); }
-          : undefined;
-      }, [sound]);
+            ? () => {
+                console.log('Unloading Sound');
+                sound.unloadAsync();
+            }
+            : undefined;
+    }, [sound]);
 
     async function getFiles() {
         try {
@@ -50,7 +52,7 @@ export default function Recorder() {
                 await StorageAccessFramework.copyAsync({
                     from: albumUri,
                     to: FileSystem.cacheDirectory,
-                }); 
+                });
 
                 const outputDir = FileSystem.cacheDirectory + "mirecorder";
                 setInternalFolderUri(outputDir); // most likely not needed, but saved for now
@@ -58,6 +60,16 @@ export default function Recorder() {
                 // filenames in the internal cache storage
                 const outputContents = await FileSystem.readDirectoryAsync(outputDir);
                 setCacheRecordings(outputContents);
+
+                // get media asset objects from external "mirecorder"-album
+                const assetAlbum = await MediaLibrary.getAlbumAsync('mirecorder');
+                const assetTable = await MediaLibrary.getAssetsAsync({
+                    mediaType: "audio",
+                    album: assetAlbum,
+                    first: 500
+                }); // 500 files per PagedInfo page, if more files, needs a higher limit
+
+                setAudioAssets(assetTable.assets);
             }
 
         } catch (err) {
@@ -65,30 +77,40 @@ export default function Recorder() {
         }
     }
 
-    async function playClip(clipUri) {
+    async function playClip(clipFileName) {
         try {
-            const album = await MediaLibrary.getAlbumAsync('mirecorder');
-            const assetTable = await MediaLibrary.getAssetsAsync({ mediaType: "audio", album: album});
-            const asset = assetTable.assets[1];
+            let assetToPlay = undefined;
+            for (const asset of audioAssets) {
+                if (asset.filename === clipFileName) assetToPlay = asset;
+            }
 
-            // works, TODO: filename utilization
-
-            const { sound } = await Audio.Sound.createAsync(asset);
-            setSound(sound);
-            console.log('Playing Sound');
-            await sound.playAsync();
+            if (assetToPlay != undefined) {
+                const { sound } = await Audio.Sound.createAsync(assetToPlay);
+                setSound(sound);
+                console.log('Playing Sound');
+                await sound.playAsync();
+            }
 
         } catch (err) {
             console.error(err);
         }
     }
 
+    // TODO: rename cacheRecordings to something more descriptive
+    // TODO: playing all files with the just finished playing-boolean
+    function playAll() {
+        for (const clipFileName of cacheRecordings) {
+            console.log(clipFileName);
+        }
+    };
+
+    // maybe change to a flatlist
     function renderPlaylist() {
-        return cacheRecordings.map((clip, index) => {
+        return cacheRecordings.map((clipFileName, index) => {
             return (
                 <View key={index} style={styles.row}>
                     <Text style={styles.fill}>Clip {index + 1}</Text>
-                    <Button style={styles.button} onPress={() => playClip(clip)} title="Play" />
+                    <Button style={styles.button} onPress={() => playClip(clipFileName)} title="Play" />
                 </View>
             );
         });
@@ -97,7 +119,7 @@ export default function Recorder() {
     return (
         <View style={styles.container}>
             <Button title="Get Local Files" onPress={getFiles} />
-            {/*<Button title="Get Local Uri" onPress={() => alert(internalFolderUri)} />*/}
+            <Button title="Play All" onPress={playAll} />
             <Text>Playlist</Text>
             {renderPlaylist()}
             <StatusBar style="auto" />

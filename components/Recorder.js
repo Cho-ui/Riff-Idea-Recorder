@@ -54,6 +54,7 @@ export default function Recorder() {
         return `${minDisplay}:${secDisplay}`;
     }
 
+    // TODO: flatlist this
     function getRecordingTakes() {
         return recordings.map((take, index) => {
             return (
