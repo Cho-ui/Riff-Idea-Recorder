@@ -11,6 +11,7 @@ export default function Recorder() {
     const [cacheRecordings, setCacheRecordings] = useState([]);
     const [sound, setSound] = useState();
     const [audioAssets, setAudioAssets] = useState([]);
+    const [assetIndex, setAssetIndex] = useState();
 
     useEffect(() => {
         return sound
@@ -96,13 +97,42 @@ export default function Recorder() {
         }
     }
 
-    // TODO: rename cacheRecordings to something more descriptive
-    // TODO: playing all files with the just finished playing-boolean
-    function playAll() {
-        for (const clipFileName of cacheRecordings) {
-            console.log(clipFileName);
+    async function playNext(asset, assetIndex) {
+        try {
+            const { sound } = await Audio.Sound.createAsync(asset);
+                setSound(sound);
+                sound.setOnPlaybackStatusUpdate((playbackStatus) => {
+                    const nextIndex = assetIndex + 1;
+                    if (playbackStatus.didJustFinish && nextIndex < audioAssets.length) {
+                        playNext(audioAssets[nextIndex], nextIndex);
+                    }
+                })
+                console.log('Playing Sound');
+                await sound.playAsync();
+        } catch (err) {
+            console.error(err);
         }
-    };
+    }
+
+    // TODO: rename cacheRecordings to something more descriptive
+    async function playAll() {
+        try {
+            const asset = audioAssets[0];
+            const assetIndex = 0;
+            const { sound } = await Audio.Sound.createAsync(asset);
+                setSound(sound);
+                sound.setOnPlaybackStatusUpdate((playbackStatus) => {
+                    if (playbackStatus.didJustFinish) {
+                        const nextIndex = assetIndex + 1;
+                        playNext(audioAssets[nextIndex], nextIndex);
+                    };
+                });
+                console.log('Playing Sound');
+                await sound.playAsync();
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
     // maybe change to a flatlist
     function renderPlaylist() {

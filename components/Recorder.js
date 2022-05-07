@@ -74,7 +74,7 @@ export default function Recorder() {
                 const asset = await MediaLibrary.createAssetAsync(recUri);
                 const album = await MediaLibrary.getAlbumAsync('mirecorder');
                 if (album == null) {
-                    // TODO: Delete original file? Clear the clip list once saved?
+                    // TODO: Delete original file? Clear the clip list once saved to resolve threading bug?
                     await MediaLibrary.createAlbumAsync('mirecorder', asset, true);
                 } else {
                     await MediaLibrary.addAssetsToAlbumAsync([asset], album, true);
