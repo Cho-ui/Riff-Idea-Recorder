@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, FlatList } from 'react-native'
 import * as MediaLibrary from 'expo-media-library';
 import { Audio } from 'expo-av';
-
+import { Entypo } from '@expo/vector-icons';
 
 export default function Recorder() {
     const [sound, setSound] = useState();
@@ -129,22 +129,31 @@ export default function Recorder() {
         return `${minDisplay}:${secDisplay}`;
     }
 
+    const listHeader = () => {
+        return (
+            <View style={styles.headerContainer}>
+                <Text style={styles.listHeader}>Playlist</Text>
+            </View>
+        )
+    }
+
     return (
         <View style={styles.container}>
-            <Button title="Get Local Files" onPress={getFiles} />
-            <Button title="Play All" onPress={playAll} />
-            <Text>Playlist</Text>
+            <Button title="Get Local Files" onPress={getFiles} color="blue" />
+            <View style={{flex:0.1}}/>
+            <Button title="Play All" onPress={playAll} color="green" />
             <FlatList
                 data={audioAssets}
+                ListHeaderComponent={listHeader}
                 extraData={audioAssets} // TODO: test whether relevant
                 keyExtractor={(item) => item.filename}
                 renderItem={({ item, index }) => (
                     <View style={styles.row}>
                         <Text style={styles.cliptext}>Clip {index + 1} - {getDurationFormatted(item)}</Text>
-                        <Button style={styles.button} onPress={() => moveUp(index)} title="Up" />
-                        <Button style={styles.button} onPress={() => moveDown(index)} title="Down" />
-                        <Button style={styles.button} onPress={() => playClip(item)} title="Play" />
-                        <Button style={styles.button} onPress={() => remove(item)} title="Del" />
+                        <Entypo.Button name="arrow-with-circle-up" color="blue" backgroundColor="white" style={styles.button} onPress={() => moveUp(index)} title="Up" />
+                        <Entypo.Button name="arrow-with-circle-down" color="blue" backgroundColor="white" style={styles.button} onPress={() => moveDown(index)} title="Down" />
+                        <Entypo.Button name="controller-play" color="green" backgroundColor="white" style={styles.button} onPress={() => playClip(item)} title="Play" />
+                        <Entypo.Button name="circle-with-cross" color="red" backgroundColor="white" style={styles.button} onPress={() => remove(item)} title="Del" />
                     </View>
                 )} />
             <StatusBar style="auto" />
@@ -158,6 +167,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
+        
     },
     row: {
         flexDirection: 'row',
@@ -168,6 +178,16 @@ const styles = StyleSheet.create({
         marginRight: 16
     },
     button: {
-        marginRight: 10
-    }
+        margin: 10
+    },
+    headerContainer: {
+        alignItems: 'center',
+        paddingBottom: 10,
+        paddingTop: 10
+      },
+      listHeader: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: "blue"
+      }
 });

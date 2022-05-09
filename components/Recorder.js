@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Button, StyleSheet, Text, View, FlatList } from 'react-native';
 import { Audio } from 'expo-av';
+import { Entypo } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
 
 export default function Recorder() {
@@ -74,21 +75,29 @@ export default function Recorder() {
         }
     }
 
+    const listHeader = () => {
+        return (
+            <View style={styles.headerContainer}>
+                <Text style={styles.listHeader}>Takes</Text>
+            </View>
+        )
+    }
+
     return (
         <View style={styles.container}>
             <Text>{message}</Text>
-            <Button
+            <Button color="red"
                 title={recording ? 'Stop Recording' : 'Start Recording'}
                 onPress={recording ? stopRecording : startRecording} />
-            <Text>Takes</Text>
             <FlatList
             data={recordings}
+            ListHeaderComponent={listHeader}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({item, index}) => (
                 <View style={styles.row}>
                     <Text style={styles.taketext}>Take {index + 1} - {item.duration}</Text>
-                    <Button style={styles.button} onPress={() => item.sound.replayAsync()} title="Play" />
-                    <Button style={styles.button} onPress={() => saveRecording(item.file)} title="Save" />
+                    <Entypo.Button name="controller-play" color="green" backgroundColor="white" style={styles.button} onPress={() => item.sound.replayAsync()} title="Play" />
+                    <Entypo.Button name="save" color="blue" backgroundColor="white" style={styles.button} onPress={() => saveRecording(item.file)} title="Save" />
                 </View>
             )}
              />
@@ -114,5 +123,15 @@ const styles = StyleSheet.create({
     },
     button: {
         margin: 16
-    }
+    },
+    headerContainer: {
+        alignItems: 'center',
+        paddingBottom: 10,
+        paddingTop: 10
+      },
+      listHeader: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: "red"
+      }
 });
