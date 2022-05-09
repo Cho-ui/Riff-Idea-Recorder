@@ -1,12 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native'
+import { View, Text, Button, StyleSheet, FlatList } from 'react-native'
 import * as MediaLibrary from 'expo-media-library';
 import { Audio } from 'expo-av';
+
 
 export default function Recorder() {
     const [sound, setSound] = useState();
     const [audioAssets, setAudioAssets] = useState([]);
+    const [shouldRender, setShouldRender] = useState();
 
     useEffect(() => {
         return sound
@@ -16,6 +18,10 @@ export default function Recorder() {
             }
             : undefined;
     }, [sound]);
+
+    useEffect(() => {
+        setShouldRender(undefined);
+    }, [shouldRender])
 
     async function getFiles() {
         try {
@@ -85,31 +91,15 @@ export default function Recorder() {
         }
     }
 
-    // Works, but async issues
     function moveUp(index) {
-
         if (index != 0) {
             const asset = audioAssets[index];
             let assetArrayCopy = audioAssets;
             assetArrayCopy.splice(index, 1);
             assetArrayCopy.splice((index - 1), 0, asset);
             setAudioAssets(assetArrayCopy);
+            setShouldRender(true);
         }
-    }
-
-    // Problems with a flatlist, not ideal this way either
-    function renderPlaylist() {
-        return audioAssets.map((asset, index) => {
-            return (
-                <View key={index} style={styles.row}>
-                    <Text style={styles.fill}>Clip {index + 1}</Text>
-                    <Button style={styles.button} onPress={() => moveUp(index)} title="Up" />
-                    <Button style={styles.button} title="Down" />
-                    <Button style={styles.button} onPress={() => playClip(asset)} title="Play" />
-                    <Button style={styles.button} title="Share" />
-                </View>
-            );
-        });
     }
 
     return (
@@ -117,7 +107,19 @@ export default function Recorder() {
             <Button title="Get Local Files" onPress={getFiles} />
             <Button title="Play All" onPress={playAll} />
             <Text>Playlist</Text>
-            {renderPlaylist()}
+            <FlatList
+                data={audioAssets}
+                extraData={audioAssets}
+                keyExtractor={(item) => item.filename}
+                renderItem={({ item, index }) => (
+                    <View style={styles.row}>
+                        <Text style={styles.cliptext}>Clip {index + 1}</Text>
+                        <Button style={styles.button} onPress={() => moveUp(index)} title="Up" />
+                        <Button style={styles.button} title="Down" />
+                        <Button style={styles.button} onPress={() => playClip(item)} title="Play" />
+                        <Button style={styles.button} title="Share" />
+                    </View>
+                )} />
             <StatusBar style="auto" />
         </View>
     )
@@ -135,11 +137,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    fill: {
-        flex: 1,
-        margin: 16
+    cliptext: {
+        marginRight: 16
     },
     button: {
-        margin: 16
+        marginRight: 10
     }
 });
