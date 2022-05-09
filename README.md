@@ -15,10 +15,13 @@ An app that allows the user to record, save and play audiofiles in a customizabl
 
 The App can be tested with Expo via:
 
+https://expo.dev/@cho-ui/music-idea-recorder
+
 ## Further development
 
 Further development objectives after evaluation include:
 
+- Visual work on the UI
 - Overhauling playlist functionality for doubling parts
 - Adding share features
 - Adding local db-features for categorizing ideas based on e.g. key, time signature, genre etc.
