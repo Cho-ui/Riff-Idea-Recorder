@@ -136,7 +136,7 @@ export default function Recorder() {
             <Text>Playlist</Text>
             <FlatList
                 data={audioAssets}
-                extraData={audioAssets} // testaa miten relevantti tää on
+                extraData={audioAssets} // TODO: test whether relevant
                 keyExtractor={(item) => item.filename}
                 renderItem={({ item, index }) => (
                     <View style={styles.row}>

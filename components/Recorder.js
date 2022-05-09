@@ -53,19 +53,6 @@ export default function Recorder() {
         return `${minDisplay}:${secDisplay}`;
     }
 
-    // TODO: flatlist this
-    function getRecordingTakes() {
-        return recordings.map((take, index) => {
-            return (
-                <View key={index} style={styles.row}>
-                    <Text style={styles.fill}>Take {index + 1} - {take.duration}</Text>
-                    <Button style={styles.button} onPress={() => take.sound.replayAsync()} title="Play" />
-                    <Button style={styles.button} onPress={() => saveRecording(take.file)} title="Save" />
-                </View>
-            );
-        });
-    }
-
     async function saveRecording(recUri) {
         try {
             const mediaPerms = await MediaLibrary.requestPermissionsAsync();
@@ -93,7 +80,6 @@ export default function Recorder() {
             <Button
                 title={recording ? 'Stop Recording' : 'Start Recording'}
                 onPress={recording ? stopRecording : startRecording} />
-            {/*{getRecordingTakes()}*/}
             <Text>Takes</Text>
             <FlatList
             data={recordings}
