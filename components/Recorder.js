@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View, FlatList } from 'react-native';
 import { Audio } from 'expo-av';
 import * as MediaLibrary from 'expo-media-library';
 
@@ -8,7 +8,6 @@ export default function Recorder() {
     const [recording, setRecording] = useState();
     const [recordings, setRecordings] = useState([]);
     const [message, setMessage] = useState("");
-
 
     async function startRecording() {
         try {
@@ -72,12 +71,15 @@ export default function Recorder() {
             const mediaPerms = await MediaLibrary.requestPermissionsAsync();
             if (mediaPerms.status === "granted") {
                 const asset = await MediaLibrary.createAssetAsync(recUri);
-                const album = await MediaLibrary.getAlbumAsync('mirecorder');
+                const album = await MediaLibrary.getAlbumAsync('musicidearecorder');
                 if (album == null) {
-                    // TODO: Delete original file? Clear the clip list once saved to resolve threading bug?
-                    await MediaLibrary.createAlbumAsync('mirecorder', asset, true);
+                    await MediaLibrary.createAlbumAsync('musicidearecorder', asset, true);
+                    setRecordings([]);
+                   // await MediaLibrary.deleteAssetsAsync(asset); <-- will delete, but causes thread issue
                 } else {
                     await MediaLibrary.addAssetsToAlbumAsync([asset], album, true);
+                    setRecordings([]);
+                   // await MediaLibrary.deleteAssetsAsync(asset); <-- <-- will delete, but causes thread issue
                 }
             }
         } catch (err) {
@@ -91,7 +93,20 @@ export default function Recorder() {
             <Button
                 title={recording ? 'Stop Recording' : 'Start Recording'}
                 onPress={recording ? stopRecording : startRecording} />
-            {getRecordingTakes()}
+            {/*{getRecordingTakes()}*/}
+            <Text>Takes</Text>
+            <FlatList
+            data={recordings}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({item, index}) => (
+                <View style={styles.row}>
+                    <Text style={styles.taketext}>Take {index + 1} - {item.duration}</Text>
+                    <Button style={styles.button} onPress={() => item.sound.replayAsync()} title="Play" />
+                    <Button style={styles.button} onPress={() => saveRecording(item.file)} title="Save" />
+                    <Button style={styles.button} title="Share" />
+                </View>
+            )}
+             />
             <StatusBar style="auto" />
         </View>
     )
@@ -109,9 +124,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    fill: {
-        flex: 1,
-        margin: 16
+    taketext: {
+        marginRight: 16
     },
     button: {
         margin: 16

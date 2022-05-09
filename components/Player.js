@@ -30,8 +30,8 @@ export default function Recorder() {
                 return;
             }
 
-            // get media asset objects from external "mirecorder"-album
-            const assetAlbum = await MediaLibrary.getAlbumAsync('mirecorder');
+            // get media asset objects from external "musicidearecorder"-album
+            const assetAlbum = await MediaLibrary.getAlbumAsync('musicidearecorder');
             const assetTable = await MediaLibrary.getAssetsAsync({
                 mediaType: "audio",
                 album: assetAlbum,
@@ -102,6 +102,33 @@ export default function Recorder() {
         }
     }
 
+    function moveDown(index) {
+        if (index != (audioAssets.length - 1)) {
+            const asset = audioAssets[index];
+            let assetArrayCopy = audioAssets;
+            assetArrayCopy.splice(index, 1);
+            assetArrayCopy.splice((index + 1), 0, asset);
+            setAudioAssets(assetArrayCopy);
+            setShouldRender(true);
+        }
+    }
+
+    function remove(asset) {
+        let assetArrayCopy = audioAssets;
+        let filteredArray = assetArrayCopy.filter(node => node.filename != asset.filename);
+        setAudioAssets(filteredArray);
+        setShouldRender(true);
+    }
+
+    function getDurationFormatted(asset) {
+        const durInSec = asset.duration;
+        const min = durInSec / 60;
+        const minDisplay = Math.floor(min);
+        const sec = Math.round((min - minDisplay) * 60);
+        const secDisplay = sec < 10 ? `0${sec}` : sec;
+        return `${minDisplay}:${secDisplay}`;
+    }
+
     return (
         <View style={styles.container}>
             <Button title="Get Local Files" onPress={getFiles} />
@@ -109,14 +136,15 @@ export default function Recorder() {
             <Text>Playlist</Text>
             <FlatList
                 data={audioAssets}
-                extraData={audioAssets}
+                extraData={audioAssets} // testaa miten relevantti tää on
                 keyExtractor={(item) => item.filename}
                 renderItem={({ item, index }) => (
                     <View style={styles.row}>
-                        <Text style={styles.cliptext}>Clip {index + 1}</Text>
+                        <Text style={styles.cliptext}>Clip {index + 1} - {getDurationFormatted(item)}</Text>
                         <Button style={styles.button} onPress={() => moveUp(index)} title="Up" />
-                        <Button style={styles.button} title="Down" />
+                        <Button style={styles.button} onPress={() => moveDown(index)} title="Down" />
                         <Button style={styles.button} onPress={() => playClip(item)} title="Play" />
+                        <Button style={styles.button} onPress={() => remove(item)} title="Del" />
                         <Button style={styles.button} title="Share" />
                     </View>
                 )} />
