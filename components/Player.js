@@ -145,7 +145,6 @@ export default function Recorder() {
                         <Button style={styles.button} onPress={() => moveDown(index)} title="Down" />
                         <Button style={styles.button} onPress={() => playClip(item)} title="Play" />
                         <Button style={styles.button} onPress={() => remove(item)} title="Del" />
-                        <Button style={styles.button} title="Share" />
                     </View>
                 )} />
             <StatusBar style="auto" />

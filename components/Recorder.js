@@ -89,7 +89,6 @@ export default function Recorder() {
                     <Text style={styles.taketext}>Take {index + 1} - {item.duration}</Text>
                     <Button style={styles.button} onPress={() => item.sound.replayAsync()} title="Play" />
                     <Button style={styles.button} onPress={() => saveRecording(item.file)} title="Save" />
-                    <Button style={styles.button} title="Share" />
                 </View>
             )}
              />
