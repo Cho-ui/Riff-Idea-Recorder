@@ -1,6 +1,4 @@
 # Riff-Idea-Recorder
-Course project for a React Native mobile programming course
-
 An app that allows the user to record, save and play audiofiles in a customizable playlist.
 
 ## Utilized technologies
@@ -19,12 +17,15 @@ https://expo.dev/@cho-ui/music-idea-recorder
 
 ## Further development
 
-Further development objectives after evaluation include:
+Having started out as a course project, by the end of the course, the following objectives were identified
+as crucial for further development:
 
 - Visual work on the UI
 - Overhauling playlist functionality for doubling parts
 - Adding share features
 - Adding local db-features for categorizing ideas based on e.g. key, time signature, genre etc.
+
+The app is currently being developed as a hobby project towards said objectives.
 
 ### Long-term objectives on possible alternate technologies
 - Displaying audio waveforms and audio trimming
