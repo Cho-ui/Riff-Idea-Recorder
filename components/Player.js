@@ -32,13 +32,16 @@ export default function Recorder() {
 
             // get media asset objects from external "musicidearecorder"-album
             const assetAlbum = await MediaLibrary.getAlbumAsync('musicidearecorder');
-            const assetTable = await MediaLibrary.getAssetsAsync({
-                mediaType: "audio",
-                album: assetAlbum,
-                first: 500
-            }); // 500 files per PagedInfo page, if more files, needs a higher limit
 
-            setAudioAssets(assetTable.assets);
+            if (assetAlbum) {
+                const assetTable = await MediaLibrary.getAssetsAsync({
+                    mediaType: "audio",
+                    album: assetAlbum,
+                    first: 500
+                }); // 500 files per PagedInfo page, if more files, needs a higher limit
+                setAudioAssets(assetTable.assets);
+            }
+
         } catch (err) {
             console.error(err);
         }
@@ -140,7 +143,7 @@ export default function Recorder() {
     return (
         <View style={styles.container}>
             <Button title="Get Local Files" onPress={getFiles} color="blue" />
-            <View style={{flex:0.1}}/>
+            <View style={{ flex: 0.1 }} />
             <Button title="Play All" onPress={playAll} color="green" />
             <FlatList
                 data={audioAssets}
@@ -167,7 +170,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
-        
+
     },
     row: {
         flexDirection: 'row',
@@ -184,10 +187,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingBottom: 10,
         paddingTop: 10
-      },
-      listHeader: {
+    },
+    listHeader: {
         fontSize: 22,
         fontWeight: 'bold',
         color: "blue"
-      }
+    }
 });
